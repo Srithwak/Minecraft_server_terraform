@@ -19,7 +19,7 @@ Follow these steps to deploy your Minecraft server on Oracle Cloud Infrastructur
     *   Click **Add**.
 4.  **Copy Configuration**:
     *   Success message will show a "Configuration File Preview".
-    *   Save the values for: `user`, `fingerprint`, `tenancy`, and `region`.
+    *   Save the values for: `user`, `fingerprint`, `tenancy`, `region`, and `compartment_id`.
 
 ## 3. Project Configuration
 1.  **API Key Setup**:
@@ -54,7 +54,7 @@ Follow these steps to deploy your Minecraft server on Oracle Cloud Infrastructur
         mc_difficulty          = "hard"
         mc_max_players         = 20
         mc_level_seed          = "" # Leave empty for random seed
-        mc_motd                = ""
+        mc_motd                = "" # Server description
         mc_online_mode         = true # Set to false for cracked clients and offline mode
         ```
 
