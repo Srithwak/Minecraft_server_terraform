@@ -1,0 +1,201 @@
+#!/bin/bash
+
+# Redirect stdout and stderr to log file for debugging
+exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+
+echo "Starting Minecraft Server Setup..."
+
+# ----------------------------------------------------------------------
+# 1. System Updates & Dependencies
+# ----------------------------------------------------------------------
+export DEBIAN_FRONTEND=noninteractive
+
+# FIX: Force DNS to Google's if local fails (common OCI issue)
+echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+
+# Retry apt update and install up to 5 times
+for i in {1..5}; do
+    apt-get update -y && \
+    apt-get install -y openjdk-21-jre-headless python3 python3-pip screen net-tools iptables-persistent && \
+    break || sleep 15
+done
+
+# ----------------------------------------------------------------------
+# 2. Firewall Configuration
+# ----------------------------------------------------------------------
+# Allow Minecraft port (25565) and API port (8080)
+# Note: Oracle Cloud VCN Security Lists must also allow these ports.
+iptables -I INPUT -p tcp --dport 25565 -j ACCEPT
+iptables -I INPUT -p tcp --dport 8080 -j ACCEPT
+netfilter-persistent save
+
+# ----------------------------------------------------------------------
+# 3. Directory Setup
+# ----------------------------------------------------------------------
+MC_DIR="/home/ubuntu/minecraft"
+mkdir -p $MC_DIR
+chown -R ubuntu:ubuntu $MC_DIR
+
+# ----------------------------------------------------------------------
+# 4. Download Minecraft Server (PaperMC)
+# ----------------------------------------------------------------------
+cd $MC_DIR
+
+# URL for Paper 1.21.11 (Build 39)
+PAPER_URL="https://api.papermc.io/v2/projects/paper/versions/1.21.11/builds/39/downloads/paper-1.21.11-39.jar"
+
+echo "Downloading PaperMC from $PAPER_URL..."
+wget -O server.jar "$PAPER_URL"
+chown ubuntu:ubuntu server.jar
+
+# Move uploaded mods (if any) to the correct folder
+if [ -d "/home/ubuntu/mods" ]; then
+    echo "Installing mods..."
+    mkdir -p $MC_DIR/mods
+    cp -r /home/ubuntu/mods/* $MC_DIR/mods/
+    chown -R ubuntu:ubuntu $MC_DIR/mods
+    echo "Mods installed."
+fi
+
+# ----------------------------------------------------------------------
+# 5. Server Configuration
+# ----------------------------------------------------------------------
+# Accept EULA
+echo "eula=true" > eula.txt
+chown ubuntu:ubuntu eula.txt
+
+# Create server.properties with variable substitution
+cat <<EOF > server.properties
+server-port=25565
+view-distance=${mc_render_distance}
+simulation-distance=${mc_simulation_distance}
+level-seed=${mc_level_seed}
+gamemode=${mc_gamemode}
+difficulty=${mc_difficulty}
+max-players=${mc_max_players}
+motd=${mc_motd}
+online-mode=false
+EOF
+chown ubuntu:ubuntu server.properties
+
+# ----------------------------------------------------------------------
+# 6. Python API for Server Management
+# ----------------------------------------------------------------------
+cat <<EOF > server_manager.py
+from flask import Flask, jsonify
+import subprocess
+import os
+import psutil
+import time
+
+app = Flask(__name__)
+
+MC_DIR = "/home/ubuntu/minecraft"
+SCREEN_NAME = "mc_server"
+JAVA_MEM = "${mc_ram_mb}M"
+
+def is_server_running():
+    """Checks if the screen session exists."""
+    # screen -ls returns 0 if sessions found, 1 if no sessions found
+    run = subprocess.run(["screen", "-ls", SCREEN_NAME], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    return run.returncode == 0
+
+@app.route('/start', methods=['POST'])
+def start_server():
+    if is_server_running():
+        return jsonify({"status": "already running", "message": "Server is already running."}), 400
+    
+    # Start server in a detached screen session
+    # -dmS: detached, multi-display, session name
+    cmd = f"screen -dmS {SCREEN_NAME} java -Xms{JAVA_MEM} -Xmx{JAVA_MEM} -jar server.jar nogui"
+    
+    # Execute command as the 'ubuntu' user if strictly needed, but systemd handles user context usually.
+    # We are running as ubuntu via systemd, so current user is fine.
+    try:
+        subprocess.Popen(cmd, shell=True, cwd=MC_DIR)
+        # Wait a moment to ensure screen starts
+        time.sleep(1)
+        if is_server_running():
+             return jsonify({"status": "started", "message": "Server start command issued."})
+        else:
+             return jsonify({"status": "failed", "message": "Failed to start server screen session."}), 500
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/stop', methods=['POST'])
+def stop_server():
+    if not is_server_running():
+        return jsonify({"status": "not running", "message": "Server is not running."}), 400
+    
+    # Send 'stop' command to the screen session
+    # -X stuff: sends input to the screen
+    # \015 is Enter
+    try:
+        subprocess.run(f"screen -S {SCREEN_NAME} -p 0 -X stuff 'stop\015'", shell=True, check=True)
+        return jsonify({"status": "stopping", "message": "Stop command sent to server."})
+    except subprocess.CalledProcessError as e:
+        return jsonify({"status": "error", "message": f"Failed to send stop command: {e}"}), 500
+
+@app.route('/status', methods=['GET'])
+def get_status():
+    running = is_server_running()
+    
+    # Default stats
+    cpu = 0.0
+    ram_mb = 0.0
+    
+    if running:
+        # Get usage of the java process if possible, or system usage?
+        # Simpler: just system usage for now, or find the java process.
+        # Find java process child of screen?
+        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+            if proc.info['name'] == 'java' and 'server.jar' in (proc.info['cmdline'] or []):
+                try:
+                    cpu = proc.cpu_percent(interval=0.1)
+                    ram_mb = proc.memory_info().rss / (1024 * 1024)
+                except:
+                    pass
+                break
+    
+    status_str = "online" if running else "offline"
+    
+    return jsonify({
+        "status": status_str,
+        "cpu_usage_percent": cpu,
+        "ram_usage_mb": ram_mb
+    })
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8080)
+EOF
+chown ubuntu:ubuntu server_manager.py
+
+# Install python dependencies
+pip3 install flask psutil
+
+# ----------------------------------------------------------------------
+# 7. Systemd Service for API
+# ----------------------------------------------------------------------
+# This keeps the API running 24/7 so we can always hit /start
+cat <<EOF > /etc/systemd/system/minecraft-api.service
+[Unit]
+Description=Minecraft Server Management API
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/minecraft
+ExecStart=/usr/bin/python3 /home/ubuntu/minecraft/server_manager.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Enable and start the API service
+systemctl daemon-reload
+systemctl enable minecraft-api
+systemctl start minecraft-api
+
+echo "Setup script finished successfully."

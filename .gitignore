@@ -1,0 +1,12 @@
+infrastructure/ter_keys/*
+!infrastructure/ter_keys/.gitkeep
+
+server_mods/*
+!server_mods/.gitkeep
+
+infrastructure/.terraform/
+infrastructure/terraform.tfvars
+infrastructure/terraform.tfstate
+infrastructure/terraform.tfstate.backup
+infrastructure/.terraform.lock.hcl
+infrastructure/.vscode/
