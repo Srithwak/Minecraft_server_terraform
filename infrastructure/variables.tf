@@ -39,3 +39,8 @@ variable "mc_motd" {
   type    = string
   default = "Managed by Terraform"
 }
+
+variable "mc_online_mode" {
+  type    = bool
+  default = false
+}

@@ -55,7 +55,7 @@ Follow these steps to deploy your Minecraft server on Oracle Cloud Infrastructur
         mc_max_players         = 20
         mc_level_seed          = "" # Leave empty for random seed
         mc_motd                = ""
-
+        mc_online_mode         = true # Set to false for cracked clients and offline mode
         ```
 
 4.  **Mods**:

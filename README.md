@@ -46,7 +46,7 @@ This will:
 ## 🛠️ Customization
 Edit `infrastructure/terraform.tfvars` to change:
 *   **Hardware**: `vm_ocpus` (Default: 1), `vm_memory_gbs` (Default: 6)
-*   **Game**: `mc_gamemode`, `mc_difficulty`, `mc_level_seed`
+*   **Game**: `mc_gamemode`, `mc_difficulty`, `mc_level_seed`, `mc_online_mode`
 
 ## ⚠️ Destruction
 To delete all resources and stop potential billing:

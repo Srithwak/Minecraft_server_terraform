@@ -56,7 +56,8 @@ resource "oci_core_instance" "mc_server" {
       mc_gamemode            = var.mc_gamemode,
       mc_difficulty          = var.mc_difficulty,
       mc_max_players         = var.mc_max_players,
-      mc_motd                = var.mc_motd
+      mc_motd                = var.mc_motd,
+      mc_online_mode         = var.mc_online_mode
     }))
   }
 }
