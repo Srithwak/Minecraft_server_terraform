@@ -50,6 +50,21 @@ Once the base automation worked, I started adding "quality of life" features.
 *   **Online Mode Toggle**:
     *   Most recently, I added the ability to toggle `online-mode` (true/false) from Terraform, which required threading a boolean variable all the way from `tfvars` to the `server.properties` file.
 
+## Phase 5: Total Automation & Refinement
+The goal for this phase was to remove "friction" for new users. I noticed that setting up SSH keys and finding Compartment IOs were major stumbling blocks.
+
+*   **SSH Key Automation**:
+    *   Previously, the user had to generate their own SSH keys and paste paths.
+    *   I introduced `tls_private_key` resource in Terraform to generate keys on the fly and save them to `ter_keys/ssh_key.pem`.
+    *   Now, `compute.tf` references the generated key directly, meaning the user never has to worry about SSH keys unless they want to log in.
+*   **Compartment Simplification**:
+    *   Users were confused about what "Compartment ID" to use.
+    *   I realized the "Tenancy OCID" *is* the Root Compartment ID.
+    *   I removed the `compartment_id` variable and updated all resources to default to `var.tenancy_ocid`. This eliminated a configuration step and a potential source of error.
+*   **Login Session Fixes**:
+    *   Encountered "Invalid Login Session" errors.
+    *   Set `mc_online_mode = false` by default (or toggleable) to allow easier testing and connection without complex Mojang authentication setups.
+
 ## Conclusion
 What started as "I just want a Minecraft server" turned into a crash course in Cloud Engineering.
 

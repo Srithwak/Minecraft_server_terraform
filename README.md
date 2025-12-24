@@ -29,7 +29,7 @@ You need your OCI API Keys and OCIDs.
 Run the automation script in PowerShell:
 
 ```powershell
-.\easy_deploy.ps1
+    PowerShell -ExecutionPolicy Bypass -File .\easy_deploy.ps1
 ```
 
 This will:

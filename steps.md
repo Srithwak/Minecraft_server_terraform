@@ -19,7 +19,7 @@ Follow these steps to deploy your Minecraft server on Oracle Cloud Infrastructur
     *   Click **Add**.
 4.  **Copy Configuration**:
     *   Success message will show a "Configuration File Preview".
-    *   Save the values for: `user`, `fingerprint`, `tenancy`, `region`, and `compartment_id`.
+    *   Save the values for: `user`, `fingerprint`, `tenancy`, and `region`.
 
 ## 3. Project Configuration
 1.  **API Key Setup**:
@@ -32,16 +32,13 @@ Follow these steps to deploy your Minecraft server on Oracle Cloud Infrastructur
     *   Open `terraform.tfvars` (or create it if missing).
     *   Paste/Update your OCI and server details. If you leave them blank, the server will be made with default values found in `infrastructure/variables.tf`:
         ```
-        tenancy_ocid     = ""
-        user_ocid        = ""
+        tenancy          = ""
+        user             = ""
         fingerprint      = ""
         region           = ""
-        compartment_id   = ""
 
         # Keys (Relative paths assumed)
-        private_key_path     = "./ter_keys/private_ter.pem"
-        ssh_public_key_path  = "./ter_keys/ssh_key.pem.pub" 
-        ssh_private_key_path = "./ter_keys/ssh_key.pem" 
+        private_key_path     = "./ter_keys/private_ter.pem" 
 
         # Server Hardware Configuration (Always Free Tier limits: 4 OCPUs, 24GB RAM total)
         vm_ocpus      = 2

@@ -1,11 +1,11 @@
 resource "oci_core_vcn" "mc_vcn" {
   cidr_block     = "10.0.0.0/16"
-  compartment_id = var.compartment_id
+  compartment_id = var.tenancy
   display_name   = "MinecraftVCN"
 }
 
 resource "oci_core_internet_gateway" "mc_ig" {
-  compartment_id = var.compartment_id
+  compartment_id = var.tenancy
   vcn_id         = oci_core_vcn.mc_vcn.id
 }
 
@@ -18,7 +18,7 @@ resource "oci_core_default_route_table" "mc_rt" {
 }
 
 resource "oci_core_security_list" "mc_sl" {
-  compartment_id = var.compartment_id
+  compartment_id = var.tenancy
   vcn_id         = oci_core_vcn.mc_vcn.id
   display_name   = "MinecraftSecurityList"
 
@@ -60,7 +60,8 @@ resource "oci_core_security_list" "mc_sl" {
 
 resource "oci_core_subnet" "mc_subnet" {
   cidr_block        = "10.0.1.0/24"
-  compartment_id    = var.compartment_id
+  compartment_id    = var.tenancy
   vcn_id            = oci_core_vcn.mc_vcn.id
+  route_table_id    = oci_core_vcn.mc_vcn.default_route_table_id
   security_list_ids = [oci_core_security_list.mc_sl.id]
 }

@@ -1,11 +1,10 @@
-variable "tenancy_ocid" {}
-variable "user_ocid" {}
+variable "tenancy" {}
+variable "user" {}
 variable "fingerprint" {}
 variable "region" {}
 variable "private_key_path" {}
-variable "compartment_id" {}
-variable "ssh_public_key_path" {}
-variable "ssh_private_key_path" {}
+
+
 
 # VM Config
 variable "vm_ocpus" { default = 1 }
@@ -42,5 +41,5 @@ variable "mc_motd" {
 
 variable "mc_online_mode" {
   type    = bool
-  default = false
+  default = true
 }

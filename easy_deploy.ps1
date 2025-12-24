@@ -27,7 +27,6 @@ if (!(Test-Path "$KeyDir\private_ter.pem")) {
 }
 
 # 3. SSH Key Automation
-# 3. SSH Key Automation
 # Handled by Terraform automatically!
 
 

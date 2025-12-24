@@ -1,5 +1,5 @@
 data "oci_core_images" "ubuntu_images" {
-  compartment_id           = var.compartment_id
+  compartment_id           = var.tenancy
   operating_system         = "Canonical Ubuntu"
   operating_system_version = "22.04"
   shape                    = "VM.Standard.A1.Flex"
@@ -15,7 +15,7 @@ locals {
 
 resource "oci_core_instance" "mc_server" {
   availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
-  compartment_id      = var.compartment_id
+  compartment_id      = var.tenancy
   shape               = "VM.Standard.A1.Flex"
 
   shape_config {
@@ -41,7 +41,7 @@ resource "oci_core_instance" "mc_server" {
     connection {
       type        = "ssh"
       user        = "ubuntu"
-      private_key = file(var.ssh_private_key_path)
+      private_key = tls_private_key.mc_key.private_key_pem
       host        = self.public_ip
     }
   }
@@ -63,7 +63,7 @@ resource "oci_core_instance" "mc_server" {
 }
 
 data "oci_identity_availability_domains" "ads" {
-  compartment_id = var.compartment_id
+  compartment_id = var.tenancy
 }
 
 output "public_ip" {
