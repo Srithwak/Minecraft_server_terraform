@@ -55,7 +55,7 @@ Follow these steps to deploy your Minecraft server on Oracle Cloud Infrastructur
         mc_online_mode         = true # Set to false for cracked clients and offline mode
         ```
 
-4.  **Mods**:
+3.  **Mods**:
     *   **Important**: Terraform expects the server_mods folder to exist, even if empty.
     *   Place any `.jar` server side mod files you want here.
     *   *Note: The server installs PaperMC by default. Ensure mods are compatible.*

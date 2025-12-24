@@ -72,3 +72,17 @@ What started as "I just want a Minecraft server" turned into a crash course in C
 1.  **Automation is worth the initial pain**: It took 3x longer to write the Terraform script than to build the server manually once. But now I can rebuild it in 3 minutes.
 2.  **Logs are life**: Without creating custom logging for the startup script, debugging cloud instances is impossible.
 3.  **Security Layers**: Firewalls exist at the Cloud level (OCI Security Lists) *and* the OS level (`iptables`). You have to punch holes in both.
+
+## Phase 6: Script Robustness & The "One-Click" Promise
+You can't call it "easy deploy" if the script crashes and closes the window before you can read the error!
+
+*   **The Problem**:
+    *   PowerShell scripts often close immediately upon completion or error.
+    *   When the setup failed (e.g., missing Terraform, wrong keys), the window vanished, leaving the user guessing.
+    *   Terraform's "background" initialization could look like a hang or crash.
+*   **The Fix**:
+    *   **Try/Catch/Finally**: I wrapped the entire `easy_deploy.ps1` logic in a robust error handling block.
+    *   **Pause on Exit**: Added `Read-Host "Press Enter to exit..."` in the `finally` block. This ensures the window *always* stays open, regardless of success or failure.
+    *   **Better Feedback**: Replaced generic system errors with friendly warnings (e.g., "Missing OCI Private Key").
+*   **Result**:
+    *   A truly resilient deployment script that guides the user through fixes instead of just dying silently.
