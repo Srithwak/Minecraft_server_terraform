@@ -51,11 +51,15 @@ Write-Host "[wait] Waiting for Minecraft API (Port 8080) to initialize..." -Fore
 
 # 6. Wait for Service
 $RetryCount = 0
-$MaxRetries = 60 # 5 minutes (5s * 60)
+$MaxRetries = 120 # 10 minutes (5s * 120) - Increased for slower installs
 $ServerReady = $false
+
+Write-Host "   Waiting 30s for VM to boot..." -ForegroundColor DarkGray
+Start-Sleep -Seconds 30
 
 while ($RetryCount -lt $MaxRetries) {
     try {
+        # Status endpoint is GET (default), do NOT use -Method Post here
         $Response = Invoke-RestMethod -Uri "http://${PublicIP}:8080/status" -ErrorAction Stop -TimeoutSec 2
         $ServerReady = $true
         break

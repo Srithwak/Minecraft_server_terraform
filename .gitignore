@@ -1,12 +1,14 @@
-infrastructure/ter_keys/*
-!infrastructure/ter_keys/.gitkeep
-
 server_mods/*
 !server_mods/.gitkeep
 
-infrastructure/.terraform/
-infrastructure/terraform.tfvars
-infrastructure/terraform.tfstate
-infrastructure/terraform.tfstate.backup
-infrastructure/.terraform.lock.hcl
-infrastructure/.vscode/
+infrastructure/*
+
+!infrastructure/compute.tf
+!infrastructure/keys.tf
+!infrastructure/network.tf
+!infrastructure/provider.tf
+!infrastructure/setup.sh.tfpl
+!infrastructure/variables.tf
+
+infrastructure/ter_keys/*
+!infrastructure/ter_keys/.gitkeep

@@ -67,7 +67,7 @@ Follow these steps to deploy your Minecraft server on Oracle Cloud Infrastructur
 1.  Open **PowerShell** in the project root folder.
 2.  Run the deployment script:
     ```powershell
-    .\easy_deploy.ps1
+    PowerShell -ExecutionPolicy Bypass -File .\easy_deploy.ps1
     ```
 3.  **Wait**:
     *   Terraform will provision the server (Virtual Cloud Network, Compute Instance, Firewall).
