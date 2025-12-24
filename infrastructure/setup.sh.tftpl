@@ -25,6 +25,7 @@ done
 # ----------------------------------------------------------------------
 # Allow Minecraft port (25565) and API port (8080)
 # Note: Oracle Cloud VCN Security Lists must also allow these ports.
+iptables -I INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -I INPUT -p tcp --dport 25565 -j ACCEPT
 iptables -I INPUT -p tcp --dport 8080 -j ACCEPT
 netfilter-persistent save

@@ -7,8 +7,9 @@ infrastructure/*
 !infrastructure/keys.tf
 !infrastructure/network.tf
 !infrastructure/provider.tf
-!infrastructure/setup.sh.tfpl
+!infrastructure/setup.sh.tftpl
 !infrastructure/variables.tf
+# !infrastructure/terraform.tfvars
 
 infrastructure/ter_keys/*
 !infrastructure/ter_keys/.gitkeep
