@@ -2,7 +2,11 @@ variable "tenancy" {}
 variable "user" {}
 variable "fingerprint" {}
 variable "region" {}
-variable "private_key_path" {}
+
+variable "private_key_path" {
+  type    = string
+  default = "./infrastructure/ter_keys/private_ter.pem"
+}
 
 
 
