@@ -42,12 +42,41 @@ chown -R ubuntu:ubuntu $MC_DIR
 # ----------------------------------------------------------------------
 cd $MC_DIR
 
-# URL for Paper 1.21.11 (Build 39)
-PAPER_URL="https://api.papermc.io/v2/projects/paper/versions/1.21.11/builds/39/downloads/paper-1.21.11-39.jar"
+# Check which server type to install
+SERVER_JAR_FILE="server.jar" # Default for Paper
 
-echo "Downloading PaperMC from $PAPER_URL..."
-wget -O server.jar "$PAPER_URL"
-chown ubuntu:ubuntu server.jar
+if [ "${mc_server_type}" = "fabric" ]; then
+    echo "Installing Fabric Server..."
+    # Fabric Installer Download
+    FABRIC_INSTALLER_URL="https://maven.fabricmc.net/net/fabricmc/fabric-installer/${fabric_installer_version}/fabric-installer-${fabric_installer_version}.jar"
+    echo "Downloading Fabric Installer from $FABRIC_INSTALLER_URL..."
+    wget -O fabric-installer.jar "$FABRIC_INSTALLER_URL"
+
+    # Install Fabric Server
+    MC_VERSION="${mc_version}" 
+    echo "Installing Fabric for Minecraft $MC_VERSION with Loader ${fabric_loader_version}..."
+    java -jar fabric-installer.jar server -mcversion $MC_VERSION -loader ${fabric_loader_version} -downloadMinecraft
+
+    # Fabric creates 'fabric-server-launch.jar' which allows it to run.
+    # We will run this file instead of server.jar.
+    SERVER_JAR_FILE="fabric-server-launch.jar"
+    
+    # Ensure permissions for everything created (libraries, versions, etc.)
+    chown -R ubuntu:ubuntu $MC_DIR
+
+elif [ "${mc_server_type}" = "paper" ]; then
+    # URL for Paper 1.21.11 (Build 39)
+    PAPER_URL="https://api.papermc.io/v2/projects/paper/versions/1.21.1/builds/39/downloads/paper-1.21.1-39.jar"
+    
+    echo "Downloading PaperMC from $PAPER_URL..."
+    wget -O server.jar "$PAPER_URL"
+    SERVER_JAR_FILE="server.jar"
+    chown -R ubuntu:ubuntu $MC_DIR
+
+else
+    echo "ERROR: Invalid server type specified."
+    exit 1
+fi
 
 # Move uploaded mods (if any) to the correct folder
 if [ -d "/home/ubuntu/mods" ]; then
@@ -94,6 +123,7 @@ app = Flask(__name__)
 MC_DIR = "/home/ubuntu/minecraft"
 SCREEN_NAME = "mc_server"
 JAVA_MEM = "${mc_ram_mb}M"
+JAR_FILE = "$${SERVER_JAR_FILE}"
 
 def is_server_running():
     """Checks if the screen session exists."""
@@ -108,7 +138,7 @@ def start_server():
     
     # Start server in a detached screen session
     # -dmS: detached, multi-display, session name
-    cmd = f"screen -dmS {SCREEN_NAME} java -Xms{JAVA_MEM} -Xmx{JAVA_MEM} -jar server.jar nogui"
+    cmd = f"screen -dmS {SCREEN_NAME} java -Xms{JAVA_MEM} -Xmx{JAVA_MEM} -jar {JAR_FILE} nogui"
     
     # Execute command as the 'ubuntu' user if strictly needed, but systemd handles user context usually.
     # We are running as ubuntu via systemd, so current user is fine.
@@ -150,7 +180,7 @@ def get_status():
         # Simpler: just system usage for now, or find the java process.
         # Find java process child of screen?
         for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-            if proc.info['name'] == 'java' and 'server.jar' in (proc.info['cmdline'] or []):
+            if proc.info['name'] == 'java' and JAR_FILE in (proc.info['cmdline'] or []):
                 try:
                     cpu = proc.cpu_percent(interval=0.1)
                     ram_mb = proc.memory_info().rss / (1024 * 1024)

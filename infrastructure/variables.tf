@@ -43,3 +43,23 @@ variable "mc_online_mode" {
   type    = bool
   default = true
 }
+
+variable "mc_server_type" {
+  type    = string
+  default = "fabric"
+}
+
+variable "fabric_installer_version" {
+  type    = string
+  default = "1.0.1"
+}
+
+variable "fabric_loader_version" {
+  type    = string
+  default = "0.17.3"
+}
+
+variable "mc_version" {
+  type    = string
+  default = "1.21.11"
+}

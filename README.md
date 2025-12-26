@@ -5,7 +5,7 @@ A fully automated, "out-of-the-box" Minecraft server deployment on Oracle Cloud 
 ## 🚀 Features
 *   **Zero-Cost Capable**: Optimized for OCI "Always Free" Arm instances.
 *   **One-Click Deploy**: Automated PowerShell script handles infrastructure-as-code.
-*   **Auto-Configured**: Sets up Java, PaperMC, Firewalls, and System Services automatically.
+*   **Auto-Configured**: Sets up Java, Fabric (default) or PaperMC, Firewalls, and System Services automatically.
 *   **Management API**: Includes a lightweight HTTP API to Start/Stop the server remotely.
 *   **Mod Support**: Automatically uploads and installs mods from a local folder.
 
@@ -35,7 +35,7 @@ Run the automation script in PowerShell:
 This will:
 1.  Check/Generate SSH keys for the server.
 2.  Provision VCN, Subnets, and Firewall rules.
-3.  Create the VM and install Minecraft (PaperMC).
+3.  Create the VM and install Minecraft (Fabric by default, or PaperMC).
 4.  Upload any mods found in `server_mods/`.
 5.  Wait for the server to be ready.
 
@@ -46,7 +46,12 @@ This will:
 ## 🛠️ Customization
 Edit `infrastructure/terraform.tfvars` to change:
 *   **Hardware**: `vm_ocpus` (Default: 1), `vm_memory_gbs` (Default: 6)
-*   **Game**: `mc_gamemode`, `mc_difficulty`, `mc_level_seed`, `mc_online_mode`
+*   **Game**: `mc_server_type`, `mc_version` (default "1.21.11"), `mc_gamemode`, `mc_difficulty`, `mc_level_seed`, `mc_online_mode`
+
+## ❓ Troubleshooting
+*   **401 Authentication Error**: Double check your API Key Fingerprint and User OCID in `terraform.tfvars`.
+*   **Server Offline but Deployed**: SSH into the server and check `/home/ubuntu/minecraft/logs/latest.log`.
+    *   *Common Cause*: Mod version mismatch (e.g. Mod requires MC 1.21.11 but server is 1.21.1). Fix via `mc_version` variable.
 
 ## ⚠️ Destruction
 To delete all resources and stop potential billing:

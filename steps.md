@@ -53,12 +53,18 @@ Follow these steps to deploy your Minecraft server on Oracle Cloud Infrastructur
         mc_level_seed          = "" # Leave empty for random seed
         mc_motd                = "" # Server description
         mc_online_mode         = true # Set to false for cracked clients and offline mode
+        
+        # Server Type (fabric or paper)
+        mc_server_type         = "fabric"
+        mc_version             = "1.21.11"
+        fabric_loader_version  = "0.17.3"
+        fabric_installer_version = "1.0.1" 
         ```
 
 3.  **Mods**:
     *   **Important**: Terraform expects the server_mods folder to exist, even if empty.
     *   Place any `.jar` server side mod files you want here.
-    *   *Note: The server installs PaperMC by default. Ensure mods are compatible.*
+    *   *Note: The server installs Fabric (default) or PaperMC. Ensure mods are compatible.*
 
 ## 4. Deployment
 1.  Open **PowerShell** in the project root folder.
@@ -79,4 +85,5 @@ Once deployment offers a **Success** message:
 ## Troubleshooting
 *   **Terraform Error**: Check your `tenancy_ocid`, `user_ocid`, etc. in `terraform.tfvars`.
 *   **Key Error**: Ensure `private_ter.pem` is in `infrastructure/ter_keys/` and is the correct private key from OCI.
-*   **Server not Starting**: SSH into the server (`ssh -i infrastructure/ter_keys/ssh_key.pem ubuntu@[IP]`) and check logs in `/var/log/user-data.log`.
+*   **Server not Starting**: SSH into the server (`ssh -i infrastructure/ter_keys/ssh_key.pem ubuntu@[IP]`) and check logs in `/home/ubuntu/minecraft/logs/latest.log`.
+    *   *Mod Crash*: If existing mods crash the server, check that `mc_version` and `fabric_loader_version` match the mod requirements.
